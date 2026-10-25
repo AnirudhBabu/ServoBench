@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ServoBench.App/ServoBench.App.csproj" />
+    <Project Path="src/ServoBench.Core/ServoBench.Core.csproj" />
+    <Project Path="src/ServoBench.Presentation/ServoBench.Presentation.csproj" />
+    <Project Path="src/ServoBench.Simulator/ServoBench.Simulator.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ServoBench.Core.Tests/ServoBench.Core.Tests.csproj" />
+    <Project Path="tests/ServoBench.Presentation.Tests/ServoBench.Presentation.Tests.csproj" />
+  </Folder>
+</Solution>

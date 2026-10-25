@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <!-- Test method names describe behaviour with underscores. -->
+    <NoWarn>$(NoWarn);CA1707;CA2007</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\ServoBench.Core\ServoBench.Core.csproj" />
+    <ProjectReference Include="..\..\src\ServoBench.Simulator\ServoBench.Simulator.csproj" />
+  </ItemGroup>
+
+</Project>

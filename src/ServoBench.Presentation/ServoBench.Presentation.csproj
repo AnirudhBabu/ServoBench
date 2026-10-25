@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    ViewModels live in a plain net10.0 library with no WPF reference. That keeps them unit-testable
+    on any OS and forces UI concerns (dialogs, timers, dispatching) behind small interfaces.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>ServoBench.Presentation</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ServoBench.Core\ServoBench.Core.csproj" />
+  </ItemGroup>
+
+</Project>

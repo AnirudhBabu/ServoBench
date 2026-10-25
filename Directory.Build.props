@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <Authors>Anirudh Babu</Authors>
+    <Product>ServoBench</Product>
+    <Copyright>Copyright (c) 2026 Anirudh Babu</Copyright>
+  </PropertyGroup>
+</Project>

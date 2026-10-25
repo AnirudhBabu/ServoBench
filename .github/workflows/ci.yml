@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  windows:
+    name: Build, test and package (Windows)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore ServoBench.slnx
+
+      - name: Build
+        run: dotnet build ServoBench.slnx --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test ServoBench.slnx --configuration Release --no-build --logger trx --results-directory TestResults
+
+      - name: Publish app and simulator
+        run: |
+          dotnet publish src/ServoBench.App/ServoBench.App.csproj --configuration Release --runtime win-x64 --self-contained false --output publish/ServoBench
+          dotnet publish src/ServoBench.Simulator/ServoBench.Simulator.csproj --configuration Release --runtime win-x64 --self-contained false --output publish/ServoBench
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults
+
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: ServoBench-win-x64
+          path: publish/ServoBench
+
+  linux:
+    # The view models and drive logic have no WPF dependency, so they are tested on Linux as well.
+    name: Core and view model tests (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Test core and simulator
+        run: dotnet test tests/ServoBench.Core.Tests/ServoBench.Core.Tests.csproj --configuration Release
+
+      - name: Test view models
+        run: dotnet test tests/ServoBench.Presentation.Tests/ServoBench.Presentation.Tests.csproj --configuration Release

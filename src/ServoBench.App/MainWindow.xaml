@@ -1,0 +1,348 @@
+<Window x:Class="ServoBench.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="clr-namespace:ServoBench.App.Controls"
+        xmlns:vm="clr-namespace:ServoBench.Presentation;assembly=ServoBench.Presentation"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:MainViewModel, IsDesignTimeCreatable=False}"
+        Title="ServoBench · Drive configuration"
+        Width="1220" Height="780" MinWidth="1000" MinHeight="620"
+        FontFamily="Segoe UI" FontSize="13"
+        Background="{StaticResource WindowBrush}"
+        Foreground="{StaticResource TextBrush}"
+        WindowStartupLocation="CenterScreen">
+
+    <Window.Resources>
+        <!-- Groups the parameter grid by Motion / Limits / Tuning / Nameplate. -->
+        <CollectionViewSource x:Key="GroupedParameters" Source="{Binding Parameters}">
+            <CollectionViewSource.GroupDescriptions>
+                <PropertyGroupDescription PropertyName="Group" />
+            </CollectionViewSource.GroupDescriptions>
+        </CollectionViewSource>
+    </Window.Resources>
+
+    <Grid Margin="14">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- ============================== Connection and parameter toolbar -->
+        <Border Grid.Row="0" Style="{StaticResource Card}" Padding="12,10" Margin="0,0,0,12">
+            <DockPanel LastChildFill="False">
+                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Ellipse x:Name="ConnectionDot" Width="10" Height="10" Margin="0,0,8,0" VerticalAlignment="Center">
+                        <Ellipse.Style>
+                            <Style TargetType="Ellipse">
+                                <Setter Property="Fill" Value="{StaticResource MutedTextBrush}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding State}" Value="Connecting">
+                                        <Setter Property="Fill" Value="{StaticResource WarnBrush}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding State}" Value="Connected">
+                                        <Setter Property="Fill" Value="{StaticResource OkBrush}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Ellipse.Style>
+                    </Ellipse>
+                    <TextBlock Text="Drive" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,10,0" />
+                    <TextBox Text="{Binding Host, UpdateSourceTrigger=PropertyChanged}" Width="130" Margin="0,0,6,0" />
+                    <TextBlock Text=":" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="{StaticResource MutedTextBrush}" />
+                    <!-- No local ToolTip here: the TextBox style shows validation errors as the tooltip. -->
+                    <TextBox Text="{Binding Port, UpdateSourceTrigger=PropertyChanged}" Width="64" Margin="0,0,10,0" />
+                    <Button Content="Connect" Command="{Binding ConnectCommand}" IsDefault="True" />
+                    <Button Content="Disconnect" Command="{Binding DisconnectCommand}" />
+                </StackPanel>
+
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="Read from drive" Command="{Binding ReadAllCommand}" />
+                    <Button Command="{Binding WriteChangesCommand}" FontWeight="SemiBold">
+                        <TextBlock>
+                            <Run Text="Write to drive" />
+                            <Run Text="{Binding PendingChangeCount, Mode=OneWay, StringFormat='({0})'}" />
+                        </TextBlock>
+                    </Button>
+                    <Button Content="Revert" Command="{Binding RevertChangesCommand}" />
+                    <Separator Margin="6,2,12,2" Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />
+                    <Button Content="Load profile…" Command="{Binding LoadProfileCommand}" />
+                    <Button Content="Save profile…" Command="{Binding SaveProfileCommand}" Margin="0" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="300" />
+                <ColumnDefinition Width="12" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- ============================== Drive control and telemetry -->
+            <Border Grid.Column="0" Style="{StaticResource Card}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Text="DRIVE STATE" Style="{StaticResource SectionTitle}" />
+                        <WrapPanel>
+                            <Border>
+                                <Border.Style>
+                                    <Style TargetType="Border" BasedOn="{StaticResource Badge}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsEnabled}" Value="True">
+                                                <Setter Property="Background" Value="{StaticResource OkBrush}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <TextBlock Text="ENABLED">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock" BasedOn="{StaticResource BadgeText}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsEnabled}" Value="True">
+                                                    <Setter Property="Foreground" Value="White" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Border>
+                            <Border>
+                                <Border.Style>
+                                    <Style TargetType="Border" BasedOn="{StaticResource Badge}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsAtSpeed}" Value="True">
+                                                <Setter Property="Background" Value="{StaticResource AccentBrush}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <TextBlock Text="AT SPEED">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock" BasedOn="{StaticResource BadgeText}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsAtSpeed}" Value="True">
+                                                    <Setter Property="Foreground" Value="White" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Border>
+                            <Border>
+                                <Border.Style>
+                                    <Style TargetType="Border" BasedOn="{StaticResource Badge}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsCurrentLimited}" Value="True">
+                                                <Setter Property="Background" Value="{StaticResource WarnBrush}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <TextBlock Text="CURRENT LIMIT">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock" BasedOn="{StaticResource BadgeText}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsCurrentLimited}" Value="True">
+                                                    <Setter Property="Foreground" Value="White" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Border>
+                            <Border>
+                                <Border.Style>
+                                    <Style TargetType="Border" BasedOn="{StaticResource Badge}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsFaulted}" Value="True">
+                                                <Setter Property="Background" Value="{StaticResource FaultBrush}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <TextBlock Text="FAULT">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock" BasedOn="{StaticResource BadgeText}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsFaulted}" Value="True">
+                                                    <Setter Property="Foreground" Value="White" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Border>
+                        </WrapPanel>
+
+                        <TextBlock Text="{Binding FaultText}" TextWrapping="Wrap" Margin="0,4,0,8">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsFaulted}" Value="True">
+                                            <Setter Property="Foreground" Value="{StaticResource FaultBrush}" />
+                                            <Setter Property="FontWeight" Value="SemiBold" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <UniformGrid Columns="3" Margin="0,0,0,18">
+                            <Button Content="Enable" Command="{Binding EnableCommand}" />
+                            <Button Content="Disable" Command="{Binding DisableCommand}" />
+                            <Button Content="Reset fault" Command="{Binding ResetFaultCommand}" Margin="0" />
+                        </UniformGrid>
+
+                        <TextBlock Text="SPEED COMMAND (rpm, negative reverses)" Style="{StaticResource SectionTitle}" />
+                        <Grid Margin="0,0,0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Column="0" Margin="0,0,6,0"
+                                     Text="{Binding SpeedCommandText, UpdateSourceTrigger=PropertyChanged}">
+                                <!-- Enter sends the speed instead of triggering the window's default button. -->
+                                <TextBox.InputBindings>
+                                    <KeyBinding Key="Enter" Command="{Binding SendSpeedCommand}" />
+                                </TextBox.InputBindings>
+                            </TextBox>
+                            <Button Grid.Column="1" Content="Send" Command="{Binding SendSpeedCommand}" MinWidth="56" />
+                            <Button Grid.Column="2" Content="Stop" Command="{Binding StopCommand}" MinWidth="56" Margin="0" />
+                        </Grid>
+                        <TextBlock Text="{Binding SpeedCommandError}" Foreground="{StaticResource FaultBrush}" TextWrapping="Wrap"
+                                   FontSize="11" Margin="0,0,0,18" />
+
+                        <TextBlock Text="TELEMETRY" Style="{StaticResource SectionTitle}" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="44" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Text="Actual speed" Style="{StaticResource ReadoutLabel}" />
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding ActualSpeed, StringFormat={}{0:F0}}" Style="{StaticResource ReadoutValue}" />
+                            <TextBlock Grid.Row="0" Grid.Column="2" Text="rpm" Style="{StaticResource ReadoutLabel}" Margin="6,0,0,0" />
+
+                            <TextBlock Grid.Row="1" Text="Setpoint" Style="{StaticResource ReadoutLabel}" />
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SpeedSetpoint, StringFormat={}{0:F0}}" Style="{StaticResource ReadoutValue}" />
+                            <TextBlock Grid.Row="1" Grid.Column="2" Text="rpm" Style="{StaticResource ReadoutLabel}" Margin="6,0,0,0" />
+
+                            <TextBlock Grid.Row="2" Text="Motor current" Style="{StaticResource ReadoutLabel}" />
+                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding MotorCurrent, StringFormat={}{0:F2}}" Style="{StaticResource ReadoutValue}" />
+                            <TextBlock Grid.Row="2" Grid.Column="2" Text="A" Style="{StaticResource ReadoutLabel}" Margin="6,0,0,0" />
+
+                            <TextBlock Grid.Row="3" Text="DC bus" Style="{StaticResource ReadoutLabel}" />
+                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding DcBusVoltage, StringFormat={}{0:F1}}" Style="{StaticResource ReadoutValue}" />
+                            <TextBlock Grid.Row="3" Grid.Column="2" Text="V" Style="{StaticResource ReadoutLabel}" Margin="6,0,0,0" />
+
+                            <TextBlock Grid.Row="4" Text="Drive temperature" Style="{StaticResource ReadoutLabel}" />
+                            <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Temperature, StringFormat={}{0:F1}}" Style="{StaticResource ReadoutValue}" />
+                            <TextBlock Grid.Row="4" Grid.Column="2" Text="°C" Style="{StaticResource ReadoutLabel}" Margin="6,0,0,0" />
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+
+            <!-- ============================== Parameters and trend -->
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" MinHeight="180" />
+                    <RowDefinition Height="12" />
+                    <RowDefinition Height="*" MinHeight="180" />
+                </Grid.RowDefinitions>
+
+                <Border Grid.Row="0" Style="{StaticResource Card}" Padding="0">
+                    <DataGrid ItemsSource="{Binding Source={StaticResource GroupedParameters}}"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              CanUserReorderColumns="False"
+                              SelectionMode="Single"
+                              HeadersVisibility="Column"
+                              GridLinesVisibility="Horizontal"
+                              HorizontalGridLinesBrush="{StaticResource BorderBrush}"
+                              BorderThickness="0"
+                              Background="Transparent"
+                              RowHeaderWidth="0">
+                        <DataGrid.GroupStyle>
+                            <GroupStyle>
+                                <GroupStyle.HeaderTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Margin="10,10,0,4"
+                                                   Foreground="{StaticResource MutedTextBrush}" />
+                                    </DataTemplate>
+                                </GroupStyle.HeaderTemplate>
+                            </GroupStyle>
+                        </DataGrid.GroupStyle>
+
+                        <DataGrid.RowStyle>
+                            <Style TargetType="DataGridRow">
+                                <Setter Property="ToolTip" Value="{Binding Description}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsDirty}" Value="True">
+                                        <Setter Property="Background" Value="{StaticResource DirtyRowBrush}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding HasErrors}" Value="True">
+                                        <Setter Property="Background" Value="{StaticResource ErrorRowBrush}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGrid.RowStyle>
+
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Parameter" Binding="{Binding Name, Mode=OneWay}" Width="2*" />
+                            <DataGridTextColumn Header="On drive" Binding="{Binding DeviceText, Mode=OneWay}" Width="*" />
+                            <DataGridTemplateColumn Header="New value" Width="*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBox Text="{Binding EditText, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                                                 IsReadOnly="{Binding IsReadOnly, Mode=OneWay}"
+                                                 Margin="2" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="Unit" Binding="{Binding Unit, Mode=OneWay}" Width="60" />
+                            <DataGridTextColumn Header="Range" Binding="{Binding Range, Mode=OneWay}" Width="1.4*" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Border>
+
+                <Border Grid.Row="2" Style="{StaticResource Card}" Padding="8">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <DockPanel Grid.Row="0" Margin="6,0,0,4">
+                            <TextBlock Text="LIVE TREND" Style="{StaticResource SectionTitle}" Margin="0" VerticalAlignment="Center" />
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <CheckBox Content="Freeze" IsChecked="{Binding Trend.IsFrozen}" VerticalAlignment="Center" Margin="0,0,10,0"
+                                          ToolTip="Hold the current trace to study a step response" />
+                                <Button Content="Clear" Command="{Binding Trend.ClearCommand}" Margin="0" />
+                            </StackPanel>
+                        </DockPanel>
+                        <controls:TrendChart Grid.Row="1" Trend="{Binding Trend}" />
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <!-- ============================== Status line -->
+        <TextBlock Grid.Row="2" Text="{Binding StatusMessage}" Margin="2,10,0,0"
+                   Foreground="{StaticResource MutedTextBrush}" TextTrimming="CharacterEllipsis" />
+    </Grid>
+</Window>

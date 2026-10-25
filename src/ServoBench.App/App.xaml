@@ -1,0 +1,83 @@
+<Application x:Class="ServoBench.App.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             ShutdownMode="OnMainWindowClose">
+    <Application.Resources>
+        <ResourceDictionary>
+
+            <!-- Palette: calm neutrals with one accent, plus status colours used only for state. -->
+            <SolidColorBrush x:Key="WindowBrush" Color="#F3F4F6" />
+            <SolidColorBrush x:Key="CardBrush" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="BorderBrush" Color="#D9DCE1" />
+            <SolidColorBrush x:Key="TextBrush" Color="#1F2933" />
+            <SolidColorBrush x:Key="MutedTextBrush" Color="#616E7C" />
+            <SolidColorBrush x:Key="AccentBrush" Color="#1F6FEB" />
+            <SolidColorBrush x:Key="OkBrush" Color="#1A7F37" />
+            <SolidColorBrush x:Key="WarnBrush" Color="#B35900" />
+            <SolidColorBrush x:Key="FaultBrush" Color="#C62828" />
+            <SolidColorBrush x:Key="IdleBadgeBrush" Color="#E4E7EB" />
+            <SolidColorBrush x:Key="DirtyRowBrush" Color="#FFF6DB" />
+            <SolidColorBrush x:Key="ErrorRowBrush" Color="#FDECEC" />
+
+            <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+
+            <Style TargetType="Button">
+                <Setter Property="Padding" Value="12,5" />
+                <Setter Property="Margin" Value="0,0,6,0" />
+                <Setter Property="MinWidth" Value="70" />
+            </Style>
+
+            <Style TargetType="TextBox">
+                <Setter Property="Padding" Value="4,3" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Style.Triggers>
+                    <Trigger Property="Validation.HasError" Value="True">
+                        <Setter Property="ToolTip"
+                                Value="{Binding RelativeSource={RelativeSource Self}, Path=(Validation.Errors)/ErrorContent}" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <Style x:Key="Card" TargetType="Border">
+                <Setter Property="Background" Value="{StaticResource CardBrush}" />
+                <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="CornerRadius" Value="6" />
+                <Setter Property="Padding" Value="14" />
+            </Style>
+
+            <Style x:Key="SectionTitle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="11" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}" />
+                <Setter Property="Margin" Value="0,0,0,8" />
+            </Style>
+
+            <Style x:Key="ReadoutValue" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="22" />
+                <Setter Property="FontFamily" Value="Consolas" />
+                <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+                <Setter Property="HorizontalAlignment" Value="Right" />
+            </Style>
+
+            <Style x:Key="ReadoutLabel" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+
+            <Style x:Key="Badge" TargetType="Border">
+                <Setter Property="Background" Value="{StaticResource IdleBadgeBrush}" />
+                <Setter Property="CornerRadius" Value="10" />
+                <Setter Property="Padding" Value="9,2" />
+                <Setter Property="Margin" Value="0,0,6,6" />
+            </Style>
+
+            <Style x:Key="BadgeText" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="11" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}" />
+            </Style>
+
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

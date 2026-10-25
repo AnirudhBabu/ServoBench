@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>ServoBench.App</RootNamespace>
+    <AssemblyName>ServoBench</AssemblyName>
+    <!-- Lets the solution restore on Linux/macOS too; the app itself only runs on Windows. -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ServoBench.Presentation\ServoBench.Presentation.csproj" />
+  </ItemGroup>
+
+</Project>
